@@ -1,12 +1,13 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('firstInput') firstInput!: ElementRef;
 
     budgetForm!: FormGroup;
@@ -17,14 +18,19 @@ export class AppComponent implements OnInit, AfterViewInit {
     filteredStartIndex: number = 0;
     filteredEndIndex: number = 12;
     monthIndexes: number[] = [];
+
     totalIncome: number[] = [];
     totalExpenses: number[] = [];
     profitAndLoss: number[] = [];
     openingBalance: number[] = [];
     closingBalance: number[] = [];
-    contextMenuIndex: number | null = null;
+
     showContextMenu: boolean = false;
     contextMenuPosition: { x: number, y: number } = { x: 0, y: 0 };
+
+    private selectedCategory?: AbstractControl;
+    private selectedValue?: number;
+    private destroy$: Subject<void> = new Subject<void>();
 
     constructor(private formBuilder: FormBuilder, private elementRef: ElementRef) { }
 
@@ -34,14 +40,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     get expenseCategories(): FormArray {
         return this.budgetForm.get('expenseCategories') as FormArray;
-    }
-
-    @HostListener('document:click', ['$event'])
-    onClickOutside(event: MouseEvent) {
-        const clickedInside = this.elementRef.nativeElement.contains(event.target);
-        if (!clickedInside) {
-            this.showContextMenu = false;
-        }
     }
 
     ngOnInit(): void {
@@ -58,6 +56,32 @@ export class AppComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
             this.firstInput?.nativeElement.focus();
         }, 300);
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    disableArrowKey(event: Event) {
+        event.preventDefault();
+    }
+
+    applyToAll() {
+        if (!this.selectedCategory) return;
+
+        const valuesArray = this.selectedCategory.get('values') as FormArray;
+        valuesArray.controls.forEach(control => control.setValue(this.selectedValue));
+
+        this.showContextMenu = false;
+    }
+
+    openContextMenu(event: MouseEvent, category: AbstractControl, value: number): void {
+        event.preventDefault();
+        this.contextMenuPosition = { x: event.clientX, y: event.clientY };
+        this.showContextMenu = true;
+        this.selectedCategory = category;
+        this.selectedValue = value;
     }
 
     getCategoryGroup(): FormGroup {
@@ -84,13 +108,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     getMonthValues(subCategory: AbstractControl): FormArray {
         return subCategory.get('values') as FormArray;
-    }
-
-    onRowRightClick(event: MouseEvent, rowIndex: number, subCategory: AbstractControl) {
-        event.preventDefault();
-        this.contextMenuIndex = rowIndex;
-        this.showContextMenu = true;
-        this.contextMenuPosition = { x: event.clientX, y: event.clientY };
     }
 
     addCategory(type: 'income' | 'expense'): void {

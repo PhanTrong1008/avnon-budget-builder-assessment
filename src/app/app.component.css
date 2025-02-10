@@ -40,7 +40,39 @@ tbody tr:nth-child(even) {
     background-color: #f9fafb;
 }
 
-.budget-header {
+.category-column {
+    width: 150px;
+}
+
+.month-column {
+    width: 130px;
+    min-width: 130px;
+    max-width: 130px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.action-column {
+    width: 60px;
+    text-align: center;
+}
+
+thead th.month-column {
+    width: 120px;
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.month-column input {
+    width: 100%;
+    text-align: right;
+}
+
+.budget-container {
+    width: 100%;
+}
+
+.budget-title {
     font-size: 24px;
     font-weight: bold;
     color: #2c3e50;
@@ -48,6 +80,7 @@ tbody tr:nth-child(even) {
     background-color: #e3f2fd;
     padding: 16px;
     border-radius: 8px;
+    overflow-x: auto;
 }
 
 .filter-container {
@@ -80,6 +113,11 @@ tbody tr:nth-child(even) {
     transition: all 0.3s ease-in-out;
 }
 
+.budget-table {
+    width: 100%;
+    overflow-x: auto;
+}
+
 .add-category-btn {
     padding: 8px 16px;
     background-color: #3b82f6;
@@ -89,6 +127,20 @@ tbody tr:nth-child(even) {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: background-color 0.2s, transform 0.2s;
+}
+
+.category-input {
+    width: 200px;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.category-input::placeholder {
+    text-align: left;
+    color: #a1a1a1;
 }
 
 .add-subcategory-btn {
@@ -137,8 +189,7 @@ tr.context-menu-active {
     background-color: #f0f9ff;
 }
 
-input[type="number"], 
-input[type="text"] {
+input[type="number"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #d1d5db;

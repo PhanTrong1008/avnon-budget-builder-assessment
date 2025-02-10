@@ -1,11 +1,14 @@
-<div>
-    <h2 class="budget-header">Budget Builder</h2>
+<div class="budget-container">
+    <div class="budget-header">
+        <h2 class="budget-title">Budget Builder</h2>
 
-    <!-- Filter -->
-    <ng-container *ngTemplateOutlet="filterSection"></ng-container>
+        <!-- Filter -->
+        <ng-container *ngTemplateOutlet="filterSection"></ng-container>
+    </div>
+
 
     <!-- Budget table -->
-    <div [formGroup]="budgetForm">
+    <div class="budget-table" [formGroup]="budgetForm">
         <ng-container *ngTemplateOutlet="budgetTable"></ng-container>
     </div>
 </div>
@@ -31,9 +34,9 @@
     <table>
         <thead>
             <tr>
-                <th>Category</th>
-                <th *ngFor="let month of months">{{ month }}</th>
-                <th>Actions</th>
+                <th class="category-column">Category</th>
+                <th class="month-column" *ngFor="let month of months">{{ month }}</th>
+                <th class="action-column">Actions</th>
             </tr>
         </thead>
 
@@ -67,7 +70,7 @@
                 {{ type === 'income' ? 'Income' : 'Expenses' }}
             </td>
             <td colspan="14">
-                <button (click)="addCategory(type)" class="add-category-btn">
+                <button (click)="addCategory(type)" class="add-category-btn" appArrowNavigation>
                     {{ type === 'income' ? 'Add New Income Category' : 'Add New Expense Category' }}
                 </button>
             </td>
@@ -76,33 +79,36 @@
         <ng-container *ngFor="let category of categories.controls; let parentIndex = index">
             <tr [formGroup]="category">
                 <td colspan="1">
-                    <input #firstInput type="text" placeholder="Parent Category" formControlName="categoryName" />
+                    <input #firstInput class="category-input" type="text" placeholder="Parent Category" formControlName="categoryName" appArrowNavigation/>
                 </td>
                 <td colspan="14">
-                    <button (click)="addSubCategory(category)" class="add-subcategory-btn">Add Subcategory</button>
+                    <button (click)="addSubCategory(category)" class="add-subcategory-btn" appArrowNavigation>Add Subcategory</button>
                 </td>
             </tr>
 
             <ng-container *ngIf="category.get('subCategories')">
                 <tr *ngFor="let subCategory of getSubCategories(category).controls; let subIndex = index"
-                    [formGroup]="getSubCategory(subCategory)"
-                    (contextmenu)="onRowRightClick($event, subIndex, subCategory)">
+                    [formGroup]="getSubCategory(subCategory)">
                     <td>
                         <input type="text" [placeholder]="type === 'income' ? 'Income Name' : 'Expense Name'"
-                            formControlName="subCategoryName" />
+                            formControlName="subCategoryName" class="category-input" appArrowNavigation/>
                     </td>
                     <ng-container formArrayName="values">
-                        <td *ngFor="let valueCtrl of getMonthValues(subCategory).controls; let j = index">
-                            <input type="number" [formControlName]="j" />
+                        <td class="month-column"
+                            *ngFor="let valueCtrl of getMonthValues(subCategory).controls; let j = index"
+                            (contextmenu)="openContextMenu($event, subCategory, valueCtrl.value)">
+                            <input type="number" [formControlName]="j" min="0" (keydown.ArrowUp)="disableArrowKey($event)"
+                            (keydown.ArrowDown)="disableArrowKey($event)" appArrowNavigation/>
                         </td>
                     </ng-container>
                     <td>
-                        <button class="delete-btn"
-                            (click)="deleteSubCategory(type, parentIndex, subIndex)">Delete</button>
+                        <button class="delete-btn action-column"
+                            (click)="deleteSubCategory(type, parentIndex, subIndex)" appArrowNavigation>Delete</button>
                     </td>
 
                     <div *ngIf="showContextMenu" class="context-menu" [style.top.px]="contextMenuPosition.y"
-                        [style.left.px]="contextMenuPosition.x">
+                        [style.left.px]="contextMenuPosition.x"
+                        (click)="applyToAll()">
                         Apply to all
                     </div>
                 </tr>
@@ -124,7 +130,6 @@
             <td *ngFor="let monthIndex of monthIndexes">
                 {{ calculateMonthlyTotal(type === 'income' ? incomeCategories : expenseCategories, monthIndex) }}
             </td>
-            <td></td>
         </tr>
     </tbody>
 </ng-template>
